@@ -1,1 +1,2 @@
 # Algorytmy-bioinformatyki
+Projekty uczelniane.
