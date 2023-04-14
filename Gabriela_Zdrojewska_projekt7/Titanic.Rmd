@@ -1,0 +1,63 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+#Biblioteki
+library(tidyr)
+library(dplyr)
+library(ggplot2)
+library(readr)
+library(ggpubr)
+library(reshape2)
+```
+
+```{r}
+#Wczytanie tabeli z pliku titanic.csv:
+dane <- read.csv("titanic.csv")
+head(dane)
+
+#Usunięcie brakujących danych
+dane <- dane %>% drop_na()
+
+#Zamienienie danych na zmienne numeryczne
+dane$Sex_cl <- as.numeric(as.factor(dane$Sex))
+dane$Embarked_cl <- as.numeric(as.factor(dane$Embarked))
+```
+
+
+```{r}
+#Wykres wiek a przeżycie
+motyw <- theme(text = element_text(size = 12, face = 'bold', color = 'navy'), axis.line = element_line(color = 'violetred', linetype = 2), panel.background = element_rect(fill = 'white'), panel.grid.major = element_line(color = 'grey85'), legend.position = 'bottom',plot.background = element_rect(fill = '#4AA4DE'))
+
+p1 <- dane %>% select(Survived, Age) %>% ggplot(aes(x = Age, fill = Survived == 1)) + ylab("Wszyscy") + xlab("Wiek") + guides(fill = guide_legend(title = "Statystyki przeżycia")) + geom_histogram(position = 'identity', alpha = 0.5, binwidth = 5) + scale_fill_brewer(palette = 'Paired', labels=c('Przeżyli', 'Wszyscy'))
+p1 + motyw
+```
+
+
+```{r}
+#Wykres wiek a klasa
+p2 <- dane %>% 
+ggplot(aes(x = Pclass, y = Age, group = Pclass)) + geom_boxplot(color="blueviolet", fill="mediumslateblue", alpha=0.5) + xlab('Klasa') + ylab('Wiek')
+p2 + theme_minimal()
+```
+
+
+```{r}
+#Wykres korelacja między zmiennymi
+kolumny <- c('Age','Fare','Parch','Pclass','SibSp','Survived', 'Sex_cl', 'Embarked_cl')
+korelacja <- cor( dane[,kolumny], use="complete.obs")
+korelacja2 <- melt(korelacja, na.rm = TRUE)
+p3 <- ggplot(korelacja2, aes(x = Var1, y = Var2, fill = value)) +
+  geom_tile() + geom_text(aes(Var2, Var1, label = round(value, 2)), color = "white", size = 3)
+p3
+```
+
+
+```{r}
+#Wykres płeć a przeżycie
+p4 <- dane %>% ggplot(aes(x = Sex_cl, fill = Survived == 1)) + ylab("Wszyscy") + xlab("Kobiety                 Mężczyźni") + guides(fill = guide_legend(title = "Statystyki przeżycia")) + geom_bar() + scale_fill_brewer(palette = 'Greens', labels=c( 'Wszyscy', 'Przeżyli'))
+p4 + theme_minimal() +  theme(legend.position = "top")
+```
+
